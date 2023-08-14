@@ -1,4 +1,4 @@
-package org.example;
+package FrameWork;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
