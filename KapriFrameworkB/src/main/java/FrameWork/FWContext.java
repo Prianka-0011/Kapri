@@ -5,62 +5,68 @@ import org.reflections.Reflections;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class FWContext {
     private static Map<String, Object> serviceObjectMap = new HashMap<>();
-
     public void start(Class<?> clazz) {
-
-
         try {
             Reflections reflections = new Reflections(clazz.getPackageName());
             Set<Class<?>> customServices = reflections.getTypesAnnotatedWith(Service.class);
-            //System.out.println(customServices.size());
             for (Class<?> serviceClass : customServices) {
-
-                serviceObjectMap.put(serviceClass.getName(), (Object) serviceClass.getDeclaredConstructor().newInstance());
-                // System.out.println("service.getName()"+serviceObjectMap.size());
+                serviceObjectMap.put(serviceClass.getName(), (Object)serviceClass.getDeclaredConstructor().newInstance());
             }
-
             performDI();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     private void performDI() {
-
         try {
-            //field injection
-            System.out.println(serviceObjectMap.size());
             for (Object service: serviceObjectMap.values()) {
-                performFieldInjection(service);
+             Object returnConstructor = performConstructorInjection(service);
+             if (returnConstructor != null)
+             {
+                 performFieldInjection(returnConstructor);
+                 performSetterInjection(returnConstructor);
+             } else {
+                 performFieldInjection(service);
+                 performSetterInjection(service);
+             }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
-
-
+    public void performSetterInjection(Object serviceobject) {
+        try {
+            Method [] methods = serviceobject.getClass().getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.isAnnotationPresent(Autowired.class)) {
+                    Class<?>[] paramTypes = method.getParameterTypes();
+                    Object [] instanceOfParams = new Object[paramTypes.length];
+                    for (int i = 0 ; i<paramTypes.length; i++) {
+                        instanceOfParams[i] = getServiceBeanOfType(paramTypes[i].getName());
+                    }
+                    method.invoke(serviceobject,instanceOfParams);
+                }
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void performFieldInjection(Object serviceObject) throws IllegalAccessException {
         try {
-           int count = 0 ;
-          /// System.out.println(serviceObject.getClass().getName());
             for (Field field: serviceObject.getClass().getDeclaredFields()) {
                 if (field.isAnnotationPresent(Autowired.class)) {
                     if (field.isAnnotationPresent(Qualifier.class))
                     {
-                        //Only autoware code
-                       // Class<?> theFieldType =field.getType();
-                       // Object instance = getServiceBeanOfType(theFieldType.getName());
                         Annotation annotation = field.getAnnotation(Qualifier.class);
                         String className = ((Qualifier)annotation).name();
-                        System.out.println("anno"+className);
                         Object instance = getServiceBeanOfType(className);
                         field.setAccessible(true);
                         field.set(serviceObject,instance);
@@ -73,22 +79,30 @@ public class FWContext {
             ex.printStackTrace();
         }
     }
+    public Object performConstructorInjection(Object object) throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+        try {
+            Constructor [] constructorList = object.getClass().getDeclaredConstructors();
+            for (Constructor constructor: constructorList) {
+                if (constructor.isAnnotationPresent(Autowired.class)) {
+                    Class<?>[] parameterTypes = constructor.getParameterTypes();
 
-    public void performConstructorInjection(Object object) {
-        Constructor [] constructorList = object.getClass().getConstructors();
-        for (Constructor constructor:constructorList) {
-            Class<?>[] methodParams = constructor.getParameterTypes();
-            Class<?> parameterType = methodParams[0];
+                    Object[] parameterInstances = new Object[parameterTypes.length];
 
-            System.out.println("Constractor param"+parameterType.getName());
-            //get the object instance of this type
-
-
+                    for (int i = 0; i < parameterTypes.length; i++) {
+                        parameterInstances[i] = getServiceBeanOfType(parameterTypes[i].getName());
+                    }
+                    Object serviceClassInstance = (Object) constructor.newInstance(parameterInstances);
+                    serviceObjectMap.put(serviceClassInstance.getClass().getName(), serviceClassInstance);
+                    return serviceClassInstance;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
+        return null;
     }
     public Object getServiceBeanOfType(String  clazzName) {
         Object service = serviceObjectMap.get(clazzName);
-        System.out.println(service.getClass().getName());
         return service;
     }
     public Object getServiceBeanOfTypeByClass(Class interfaceClass) {
@@ -104,5 +118,4 @@ public class FWContext {
         }
         return service;
     }
-
 }

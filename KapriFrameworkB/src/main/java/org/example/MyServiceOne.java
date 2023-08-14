@@ -6,14 +6,31 @@ import FrameWork.Service;
 
 @Service()
 public class MyServiceOne {
-    @Autowired
+
     private MyServiceTwo myServiceTwo1;
+    private MyService3 myService3;
+    private ServiceClass4 serviceClass4;
+
+    @Autowired
+    public void setServiceClass4(ServiceClass4 serviceClass4) {
+        this.serviceClass4 = serviceClass4;
+    }
+
     @Autowired
     @Qualifier(name = "org.example.MyServiceTwo")
     private MyServiceTwo myServiceTwo;
+
+    public MyServiceOne() {
+    }
+
+    @Autowired
+    public MyServiceOne(MyService3 myService3) {
+        this.myService3 = myService3;
+    }
+
     public void call() {
-        if (this.myServiceTwo!=null) {
-            this.myServiceTwo.print();
+        if (this.serviceClass4!=null) {
+            this.serviceClass4.print();
         }
 
     }
