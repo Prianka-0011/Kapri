@@ -2,7 +2,7 @@ package org.example;
 
 import FrameWork.Service;
 
-@Service(name = "two")
+@Service
 public class MyServiceTwo {
     public void print() {
         System.out.println("Service is working fine");
