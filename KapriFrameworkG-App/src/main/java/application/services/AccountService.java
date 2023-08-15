@@ -26,19 +26,19 @@ public class AccountService {
     }
 
 
-    @Scheduled(fixedRate = 5000)
-    public void welcome() {
-        Date date = Calendar.getInstance().getTime();
-        DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.DEFAULT);
-        String currenttime = timeFormatter.format(date);
-        System.out.println("This task runs at " + currenttime);
-    }
+//    @Scheduled(fixedRate = 5000)
+//    public void welcome() {
+//        Date date = Calendar.getInstance().getTime();
+//        DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.DEFAULT);
+//        String currenttime = timeFormatter.format(date);
+//        System.out.println("This task runs at " + currenttime);
+//    }
 
-    @Scheduled(corn = "8 0")
-    public void welcome2() {
-        Date date = Calendar.getInstance().getTime();
-        DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.DEFAULT);
-        String currenttime = timeFormatter.format(date);
-        System.out.println("This cron task runs at " + currenttime);
-    }
+//    @Scheduled(corn = "8 0")
+//    public void welcome2() {
+//        Date date = Calendar.getInstance().getTime();
+//        DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.DEFAULT);
+//        String currenttime = timeFormatter.format(date);
+//        System.out.println("This cron task runs at " + currenttime);
+//    }
 }
