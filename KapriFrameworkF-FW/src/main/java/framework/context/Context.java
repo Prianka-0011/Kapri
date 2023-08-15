@@ -1,19 +1,19 @@
 package framework.context;
 
 import framework.annotations.Autowired;
+import framework.annotations.Scheduled;
 import framework.annotations.Service;
 import framework.annotations.Value;
 import framework.util.ConfigFileReader;
+import framework.util.FrameworkTimerTask;
 import org.reflections.Reflections;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 public class Context {
     private static Map<String, Object> serviceObjects = new HashMap<>();
@@ -52,6 +52,36 @@ public class Context {
         }
     }
 
+    private void performScheduling(Object serviceObject) throws IllegalAccessException {
+        try {
+            Method [] methods = serviceObject.getClass().getDeclaredMethods();
+            for (Method method: methods) {
+                if (method.isAnnotationPresent(Scheduled.class)) {
+                    Annotation methodAnnotation = method.getAnnotation(Scheduled.class);
+                    int rate = ((Scheduled) methodAnnotation).fixedRate();
+                    String corn = ((Scheduled)methodAnnotation).corn();
+                    Timer timer =new Timer();
+                    if (rate>0) {
+                        timer.scheduleAtFixedRate(new FrameworkTimerTask(serviceObject,method),0,rate);
+                    }
+                    if (corn!="") {
+                     int cornRate = generateCornRate(corn);
+                        timer.scheduleAtFixedRate(new FrameworkTimerTask(serviceObject,method),0,cornRate);
+
+                    }
+                }
+            }
+        }catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+    private int generateCornRate(String corn) {
+        String [] splitCorn = corn.split(" ");
+        int minute = Integer.parseInt(splitCorn[0]);
+        int second = Integer.parseInt(splitCorn[1]);
+        int milliSecond = ((minute*60)+second)*1000;
+        return milliSecond;
+    }
     private void performFieldInjection(Object service) throws IllegalAccessException {
         try {
             for (Field field: service.getClass().getDeclaredFields()) {
