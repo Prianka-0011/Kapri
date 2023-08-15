@@ -32,7 +32,7 @@
         </dependency>
         <dependency>
             <groupId>org.example</groupId>
-            <artifactId>Kapri</artifactId>
+            <artifactId>Kapri-F</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
