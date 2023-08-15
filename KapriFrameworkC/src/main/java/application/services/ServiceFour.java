@@ -2,9 +2,9 @@ package application.services;
 
 import framework.annotations.Service;
 
-@Service(name = "two")
-public class ServiceTwo {
+@Service
+public class ServiceFour {
     public void print() {
-        System.out.println("Service is working fine");
+        System.out.println("Service class from four");
     }
 }
