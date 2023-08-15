@@ -1,3 +1,5 @@
+package framework;
+
 import framework.annotations.Autowired;
 import framework.context.Context;
 
