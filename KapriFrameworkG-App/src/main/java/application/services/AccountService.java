@@ -9,7 +9,7 @@ import java.util.Date;
 @Service
 public class AccountService {
     @Autowired
-    EventPublisher eventPublisher;
+    EventPublisher eventPublisher ;
     @Value(name = "client")
     String client;
 

@@ -59,8 +59,6 @@ public class Context {
         Method[] methods = serviceObject.getClass().getDeclaredMethods();
         for (Method method : methods) {
             if (method.isAnnotationPresent(EventListener.class)) {
-                //found event listener method
-                //EventListenerMethod eventListenerMethod = new EventListenerMethod(serviceObject, method);
                 Class<?>[] parameters = method.getParameterTypes();
                 Class parameterClass = parameters[0];
                 eventContext.addEventListeners(parameterClass.getName(), serviceObject, method);
